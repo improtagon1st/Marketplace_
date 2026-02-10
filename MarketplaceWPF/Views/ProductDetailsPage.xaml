@@ -1,0 +1,190 @@
+﻿<Page x:Class="MarketplaceWPF.Views.ProductDetailsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="ProductDetailsPage">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Кнопка назад -->
+        <Button Grid.Row="0"
+                Content="← Назад"
+                Command="{Binding BackCommand}"
+                Width="100"
+                Height="35"
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                BorderThickness="0"
+                FontSize="14"
+                Cursor="Hand"
+                Margin="0,0,0,20"/>
+
+        <!-- Контент -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Левая часть - изображение -->
+            <Border Grid.Column="0" 
+                    Background="#F5F5F5" 
+                    CornerRadius="10"
+                    Margin="0,0,30,0">
+                <TextBlock Text="📦" 
+                           FontSize="150" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Правая часть - информация -->
+            <StackPanel Grid.Column="1">
+                <!-- Категория -->
+                <TextBlock Text="{Binding Product.CategoryName}" 
+                           FontSize="14" 
+                           Foreground="Gray"
+                           Margin="0,0,0,10"/>
+
+                <!-- Название -->
+                <TextBlock Text="{Binding Product.Name}" 
+                           FontSize="32" 
+                           FontWeight="Bold"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,20"/>
+
+                <!-- Цена -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <TextBlock FontSize="36" 
+                               FontWeight="Bold" 
+                               Foreground="Green">
+                        <Run Text="{Binding Product.Price}"/>
+                        <Run Text=" руб."/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Наличие -->
+                <Border Background="#E8F5E9" 
+                        Padding="10" 
+                        CornerRadius="5"
+                        Width="200"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,30">
+                    <TextBlock FontSize="14" 
+                               Foreground="#2E7D32">
+                        <Run Text="В наличии:"/>
+                        <Run Text="{Binding Product.Stock}" FontWeight="Bold"/>
+                        <Run Text=" шт."/>
+                    </TextBlock>
+                </Border>
+
+                <!-- Описание -->
+                <TextBlock Text="Описание товара" 
+                           FontSize="20" 
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+
+                <TextBlock Text="{Binding Product.Description}" 
+                           FontSize="14" 
+                           TextWrapping="Wrap"
+                           Foreground="#424242"
+                           LineHeight="22"
+                           Margin="0,0,0,30"/>
+
+                <!-- Характеристики -->
+                <TextBlock Text="Характеристики" 
+                           FontSize="20" 
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+
+                <Border BorderBrush="#E0E0E0" 
+                        BorderThickness="1" 
+                        CornerRadius="5"
+                        Padding="15"
+                        Margin="0,0,0,30">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Артикул:" FontSize="14" Foreground="Gray"/>
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Product.Id, StringFormat='MP-{0:D6}'}" 
+                                       FontSize="14" 
+                                       FontWeight="Bold"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Категория:" FontSize="14" Foreground="Gray"/>
+                            <TextBlock Grid.Column="1" 
+                                       Text="{Binding Product.CategoryName}" 
+                                       FontSize="14" 
+                                       FontWeight="Bold"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Цена:" FontSize="14" Foreground="Gray"/>
+                            <TextBlock Grid.Column="1" 
+                                       FontSize="14" 
+                                       FontWeight="Bold"
+                                       Foreground="Green">
+                                <Run Text="{Binding Product.Price}"/>
+                                <Run Text=" руб."/>
+                            </TextBlock>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Кнопка заказа -->
+                <Button Content="Заказать"
+                        Command="{Binding CreateOrderCommand}"
+                        Width="250"
+                        Height="50"
+                        HorizontalAlignment="Left"
+                        Background="#2196F3"
+                        Foreground="White"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1976D2"/>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding Product.Stock}" Value="0">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                    <Setter Property="Background" Value="Gray"/>
+                                    <Setter Property="Content" Value="Нет в наличии"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
