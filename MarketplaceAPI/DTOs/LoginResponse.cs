@@ -1,3 +1,5 @@
+using System;
+
 namespace MarketplaceAPI.DTOs
 {
     public class LoginResponse
@@ -7,5 +9,6 @@ namespace MarketplaceAPI.DTOs
         public string Email { get; set; }
         public string FullName { get; set; }
         public string Role { get; set; }
+        public int? PickupPointId { get; set; }
     }
 }

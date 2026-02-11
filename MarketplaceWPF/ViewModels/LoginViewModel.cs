@@ -72,8 +72,7 @@ namespace MarketplaceWPF.ViewModels
                 UserSession.Email = response.Email;
                 UserSession.FullName = response.FullName;
                 UserSession.Role = response.Role;
-
-               
+                UserSession.PickupPointId = response.PickupPointId; // <- Добавь это
 
                 // Открываем главное окно
                 var mainWindow = new MainWindow();

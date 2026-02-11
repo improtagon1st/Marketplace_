@@ -23,7 +23,13 @@ namespace MarketplaceWPF.Views
             UserNameText.Text = $"{UserSession.FullName} ({UserSession.Role})";
 
             // Собираем все кнопки меню в список
-            _menuButtons = new List<Button>();
+            _menuButtons = new List<Button>
+                {
+                    BtnCatalog, BtnCart, BtnOrders, BtnProfile, // Customer
+                    BtnPickupOrders, BtnScanQR, // Worker
+                    BtnProducts, BtnCategories, BtnPickupPoints, BtnAllOrders // Admin
+                };
+
 
             // Показываем меню в зависимости от роли
             if (UserSession.IsCustomer)
@@ -79,6 +85,11 @@ namespace MarketplaceWPF.Views
             ContentFrame.Navigate(new OrdersPage());
             SetActiveButton(BtnOrders);
         }
+        private void ShowCart_Click(object sender, RoutedEventArgs e)
+        {
+            ContentFrame.Navigate(new CartPage());
+            SetActiveButton(BtnCart);
+        }
 
         private void ShowProfile_Click(object sender, RoutedEventArgs e)
         {
@@ -108,14 +119,14 @@ namespace MarketplaceWPF.Views
 
         private void ShowCategories_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Категории - создадим дальше");
+            ContentFrame.Navigate(new CategoriesManagementPage());
             SetActiveButton(BtnCategories);
         }
 
         private void ShowPickupPoints_Click(object sender, RoutedEventArgs e)
         {
-            ContentFrame.Navigate(new PickupWorkerPage());
-            SetActiveButton(BtnPickupOrders);
+            ContentFrame.Navigate(new PickupPointManagementPage());
+            SetActiveButton(BtnPickupPoints);
         }
 
         private void ShowAllOrders_Click(object sender, RoutedEventArgs e)

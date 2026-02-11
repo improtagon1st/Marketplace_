@@ -52,23 +52,22 @@ namespace MarketplaceAPI.Controllers
 
         // POST: api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request)
+        public IActionResult Login([FromBody] LoginRequest request)
         {
-            // Поиск пользователя
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
 
             if (user == null)
             {
                 return Unauthorized("Неверный email или пароль");
             }
 
-            // Проверка пароля
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+
+            if (!isValid)
             {
                 return Unauthorized("Неверный email или пароль");
             }
 
-            // Генерация токена
             var token = GenerateJwtToken(user);
 
             var response = new LoginResponse
@@ -77,7 +76,8 @@ namespace MarketplaceAPI.Controllers
                 UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
-                Role = user.Role
+                Role = user.Role,
+                PickupPointId = user.PickupPointId // <- Добавь это
             };
 
             return Ok(response);

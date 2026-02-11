@@ -68,20 +68,13 @@
                     </Border>
 
                     <!-- Меню для Customer -->
+                    <!-- Меню для Customer -->
                     <StackPanel x:Name="CustomerMenu" Visibility="Collapsed">
-                        <Button x:Name="BtnCatalog"
-                            Content="📦 Каталог товаров" 
-                            Style="{StaticResource MenuButtonStyle}" 
-                            Click="ShowCatalog_Click"/>
-                        <Button x:Name="BtnOrders"
-                            Content="🛍️ Мои заказы" 
-                            Style="{StaticResource MenuButtonStyle}" 
-                            Click="ShowOrders_Click"/>
-                         <Button x:Name="BtnProfile"
-                            Content="👤 Профиль" 
-                            Style="{StaticResource MenuButtonStyle}" 
-                            Click="ShowProfile_Click"/> 
-                        </StackPanel>
+                        <Button Content="🏠 Каталог" Click="ShowCatalog_Click" x:Name="BtnCatalog" Style="{StaticResource MenuButtonStyle}"/>
+                        <Button x:Name="BtnCart" Content="🛒 Корзина" Click="ShowCart_Click" Style="{StaticResource MenuButtonStyle}"/>
+                        <Button x:Name="BtnOrders" Content="📦 Мои заказы" Click="ShowOrders_Click" Style="{StaticResource MenuButtonStyle}"/>
+                        <Button x:Name="BtnProfile" Content="👤 Профиль" Click="ShowProfile_Click" Style="{StaticResource MenuButtonStyle}"/>
+                    </StackPanel>
 
                     <!-- Меню для Worker -->
                     <StackPanel x:Name="WorkerMenu" Visibility="Collapsed">

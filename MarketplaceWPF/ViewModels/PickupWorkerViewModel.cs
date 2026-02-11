@@ -70,11 +70,32 @@ namespace MarketplaceWPF.ViewModels
 
             if (order != null)
             {
+               
+                if (UserSession.IsWorker && UserSession.PickupPointId.HasValue)
+                {
+                    if (order.PickupPointId != UserSession.PickupPointId.Value)
+                    {
+                        System.Media.SystemSounds.Hand.Play(); // Звук ошибки
+                        MessageBox.Show(
+                            $"❌ ОШИБКА!\n\n" +
+                            $"Этот заказ предназначен для другого ПВЗ!\n\n" +
+                            $"Заказ должен быть выдан в:\n{order.PickupPointName}\n{order.PickupPointAddress}",
+                            "Неверный пункт выдачи",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+
+                        Clear();
+                        return;
+                    }
+                }
+
                 FoundOrder = order;
                 IsOrderFound = true;
+                System.Media.SystemSounds.Asterisk.Play(); // Звук успеха
             }
             else
             {
+                System.Media.SystemSounds.Hand.Play(); // Звук ошибки
                 MessageBox.Show("Заказ с таким кодом не найден");
                 IsOrderFound = false;
                 FoundOrder = null;

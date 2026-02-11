@@ -8,6 +8,7 @@ namespace MarketplaceWPF.Models
         public int Id { get; set; }
         public string CustomerName { get; set; }
         public string CustomerPhone { get; set; }
+        public int PickupPointId { get; set; }
         public string PickupPointName { get; set; }
         public string PickupPointAddress { get; set; }
         public decimal TotalPrice { get; set; }

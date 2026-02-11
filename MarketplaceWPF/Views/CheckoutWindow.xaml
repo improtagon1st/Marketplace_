@@ -1,0 +1,161 @@
+﻿<Window x:Class="MarketplaceWPF.Views.CheckoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Оформление заказа из корзины" 
+        Height="600" 
+        Width="500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Оформление заказа" 
+                   FontSize="24" 
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Товары -->
+        <Border Grid.Row="1"
+                Background="#F5F5F5"
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="ItemsList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White"
+                                    CornerRadius="5"
+                                    Padding="10"
+                                    Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding ProductName}" 
+                                                   FontSize="14" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBlock FontSize="12" Foreground="Gray">
+                                            <Run Text="{Binding Quantity}"/>
+                                            <Run Text=" × "/>
+                                            <Run Text="{Binding ProductPrice}"/>
+                                            <Run Text=" руб."/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="1" 
+                                               FontSize="16" 
+                                               FontWeight="Bold"
+                                               VerticalAlignment="Center">
+                                        <Run Text="{Binding TotalPrice}"/>
+                                        <Run Text=" руб."/>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Выбор ПВЗ -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,20">
+            <TextBlock Text="Выберите пункт выдачи:" 
+               FontSize="14" 
+               FontWeight="Bold"
+               Margin="0,0,0,10"/>
+
+            <ComboBox x:Name="PickupPointCombo"
+              DisplayMemberPath="Name"
+              FontSize="14"
+              Height="45"/>
+        </StackPanel>
+
+        <!-- Итого и кнопки -->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Сумма -->
+            <Border Grid.Row="0" 
+                    Background="#E8F5E9"
+                    CornerRadius="8"
+                    Padding="15"
+                    Margin="0,0,0,20">
+                <Grid>
+                    <TextBlock Text="Итого к оплате:" 
+                               FontSize="14" 
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TotalAmountText"
+                               FontSize="24" 
+                               FontWeight="Bold"
+                               Foreground="#4CAF50"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Кнопки -->
+            <StackPanel Grid.Row="1" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Right">
+                <Button Content="Отмена"
+                        Width="100"
+                        Height="45"
+                        Margin="0,0,15,0"
+                        Background="Transparent"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Click="Cancel_Click"/>
+
+                <Button Content="Оформить"
+                        Width="150"
+                        Height="45"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="Checkout_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" 
+                                                CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                              VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#388E3C"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
