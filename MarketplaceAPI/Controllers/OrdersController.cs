@@ -22,7 +22,7 @@ namespace MarketplaceAPI.Controllers
 
         // GET: api/orders - Мои заказы
         [HttpGet]
-        public async Task<IActionResult> GetOrders()
+        public async Task<IActionResult> GetOrders([FromQuery] int? pickupPointId, [FromQuery] string? status)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var userRole = User.FindFirst(ClaimTypes.Role).Value;
@@ -33,13 +33,36 @@ namespace MarketplaceAPI.Controllers
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product);
 
-            // Если не админ - показываем только свои заказы
-            if (userRole != "Admin")
+            // Фильтр по роли
+            if (userRole == "Customer")
             {
                 query = query.Where(o => o.UserId == userId);
             }
+            else if (userRole == "PickupPointWorker")
+            {
+                // Работник видит только заказы своего ПВЗ
+                var worker = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (worker?.PickupPointId != null)
+                {
+                    query = query.Where(o => o.PickupPointId == worker.PickupPointId);
+                }
+            }
+            // Admin видит все заказы
+
+            // Фильтр по ПВЗ (для Admin)
+            if (pickupPointId.HasValue)
+            {
+                query = query.Where(o => o.PickupPointId == pickupPointId.Value);
+            }
+
+            // Фильтр по статусу
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(o => o.Status == status);
+            }
 
             var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
@@ -63,6 +86,30 @@ namespace MarketplaceAPI.Controllers
                 .ToListAsync();
 
             return Ok(orders);
+        }
+        // PUT: api/orders/{id}/deliver - Отметить как доставленный (Worker/Admin)
+        [HttpPut("{id}/deliver")]
+        [Authorize(Roles = "PickupPointWorker,Admin")]
+        public async Task<IActionResult> DeliverOrder(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound("Заказ не найден");
+            }
+
+            if (order.Status != "Created")
+            {
+                return BadRequest("Заказ уже обработан");
+            }
+
+            order.Status = "Delivered";
+            order.DeliveredAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Заказ отмечен как доставленный");
         }
 
         // GET: api/orders/5 - Заказ по ID
@@ -183,6 +230,73 @@ namespace MarketplaceAPI.Controllers
                     return File(qrCodeImage, "image/png");
                 }
             }
+        }
+        // GET: api/orders/bycode/{code} - Получить заказ по QR-коду
+        [HttpGet("bycode/{code}")]
+        public async Task<IActionResult> GetOrderByCode(string code)
+        {
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.PickupPoint)
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o => o.Qrcode == code);
+
+            if (order == null)
+            {
+                return NotFound("Заказ с таким кодом не найден");
+            }
+
+            var orderDto = new OrderDto
+            {
+                Id = order.Id,
+                CustomerName = order.User.FullName,
+                CustomerPhone = order.User.Phone,
+                PickupPointName = order.PickupPoint.Name,
+                PickupPointAddress = order.PickupPoint.Address,
+                TotalPrice = order.TotalPrice,
+                Status = order.Status,
+                QRCode = order.Qrcode,
+                CreatedAt = order.CreatedAt.Value,
+                DeliveredAt = order.DeliveredAt,
+                PickedUpAt = order.PickedUpAt,
+                Items = order.OrderItems.Select(oi => new OrderItemDto
+                {
+                    ProductName = oi.Product.Name,
+                    Quantity = oi.Quantity,
+                    PriceAtOrder = oi.PriceAtOrder
+                }).ToList()
+            };
+
+            return Ok(orderDto);
+        }
+
+        // PUT: api/orders/{id}/pickup - Выдать заказ (Worker)
+        [HttpPut("{id}/pickup")]
+        [Authorize(Roles = "PickupPointWorker,Admin")]
+        public async Task<IActionResult> PickupOrder(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound("Заказ не найден");
+            }
+
+            if (order.Status == "PickedUp")
+            {
+                return BadRequest("Заказ уже выдан");
+            }
+
+            var workerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            order.Status = "PickedUp";
+            order.PickedUpAt = DateTime.Now;
+            order.PickedUpByWorkerId = workerId;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Заказ успешно выдан");
         }
 
         // Генерация уникального кода заказа

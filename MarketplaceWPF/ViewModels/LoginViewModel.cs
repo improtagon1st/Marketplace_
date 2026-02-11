@@ -73,6 +73,8 @@ namespace MarketplaceWPF.ViewModels
                 UserSession.FullName = response.FullName;
                 UserSession.Role = response.Role;
 
+               
+
                 // Открываем главное окно
                 var mainWindow = new MainWindow();
                 mainWindow.Show();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace MarketplaceAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -80,41 +81,50 @@ namespace MarketplaceAPI.Controllers
             return Ok(product);
         }
 
-        // POST: api/products - Создать товар (только Admin)
+        // POST: api/products - Создать товар (Admin)
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateProduct(Product product)
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
         {
-            product.CreatedAt = DateTime.Now;
+            var product = new Product
+            {
+                Name = request.Name,
+                Description = request.Description,
+                Price = request.Price,
+                Stock = request.Stock,
+                CategoryId = request.CategoryId,
+                ImageUrl = request.ImageUrl,
+                CreatedAt = DateTime.Now
+            };
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
             return Ok(product);
         }
 
-        // PUT: api/products/5 - Обновить товар (только Admin)
+        // PUT: api/products/{id} - Обновить товар (Admin)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateProduct(int id, Product product)
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
         {
-            var existingProduct = await _context.Products.FindAsync(id);
+            var product = await _context.Products.FindAsync(id);
 
-            if (existingProduct == null)
+            if (product == null)
             {
                 return NotFound("Товар не найден");
             }
 
-            existingProduct.Name = product.Name;
-            existingProduct.Description = product.Description;
-            existingProduct.Price = product.Price;
-            existingProduct.Stock = product.Stock;
-            existingProduct.CategoryId = product.CategoryId;
-            existingProduct.ImageUrl = product.ImageUrl;
-           // existingProduct.UpdatedAt = DateTime.Now;
+            product.Name = request.Name;
+            product.Description = request.Description;
+            product.Price = request.Price;
+            product.Stock = request.Stock;
+            product.CategoryId = request.CategoryId;
+            product.ImageUrl = request.ImageUrl;
 
             await _context.SaveChangesAsync();
 
-            return Ok(existingProduct);
+            return Ok(product);
         }
 
         // DELETE: api/products/5 - Удалить товар (только Admin)

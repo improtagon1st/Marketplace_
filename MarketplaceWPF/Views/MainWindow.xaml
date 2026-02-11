@@ -69,42 +69,50 @@
 
                     <!-- Меню для Customer -->
                     <StackPanel x:Name="CustomerMenu" Visibility="Collapsed">
-                        <Button Content="📦 Каталог товаров" 
-                        Style="{StaticResource MenuButtonStyle}" 
-                        Click="ShowCatalog_Click"/>
-                        <Button Content="🛍️ Мои заказы" 
-                        Style="{StaticResource MenuButtonStyle}" 
-                        Click="ShowOrders_Click"/>
-                        <Button Content="👤 Профиль" 
-                        Style="{StaticResource MenuButtonStyle}" 
-                        Click="ShowProfile_Click"/>
-                    </StackPanel>
+                        <Button x:Name="BtnCatalog"
+                            Content="📦 Каталог товаров" 
+                            Style="{StaticResource MenuButtonStyle}" 
+                            Click="ShowCatalog_Click"/>
+                        <Button x:Name="BtnOrders"
+                            Content="🛍️ Мои заказы" 
+                            Style="{StaticResource MenuButtonStyle}" 
+                            Click="ShowOrders_Click"/>
+                         <Button x:Name="BtnProfile"
+                            Content="👤 Профиль" 
+                            Style="{StaticResource MenuButtonStyle}" 
+                            Click="ShowProfile_Click"/> 
+                        </StackPanel>
 
                     <!-- Меню для Worker -->
                     <StackPanel x:Name="WorkerMenu" Visibility="Collapsed">
-                        <Button Content="📋 Заказы на ПВЗ" 
-                        Style="{StaticResource MenuButtonStyle}" 
-                        Click="ShowPickupOrders_Click"/>
-                        <Button Content="🔍 Сканировать QR" 
-                        Style="{StaticResource MenuButtonStyle}" 
-                        Click="ShowScanQR_Click"/>
+                        <Button x:Name="BtnPickupOrders"
+                            Content="📋 Заказы на ПВЗ" 
+                            Style="{StaticResource MenuButtonStyle}" 
+                            Click="ShowPickupOrders_Click"/>
+                        <Button x:Name="BtnScanQR"
+                            Content="🔍 Сканировать QR" 
+                            Style="{StaticResource MenuButtonStyle}" 
+                            Click="ShowScanQR_Click"/>
                     </StackPanel>
 
-                    <!-- Меню для Admin -->
                     <StackPanel x:Name="AdminMenu" Visibility="Collapsed">
-                        <Button Content="📦 Управление товарами" 
+                                    <Button x:Name="BtnProducts"
+                        Content="📦 Управление товарами" 
                         Style="{StaticResource MenuButtonStyle}" 
                         Click="ShowProducts_Click"/>
-                        <Button Content="📂 Категории" 
+                                    <Button x:Name="BtnCategories"
+                        Content="📂 Категории" 
                         Style="{StaticResource MenuButtonStyle}" 
                         Click="ShowCategories_Click"/>
-                        <Button Content="📍 Пункты выдачи" 
+                                    <Button x:Name="BtnPickupPoints"
+                        Content="📍 Пункты выдачи" 
                         Style="{StaticResource MenuButtonStyle}" 
                         Click="ShowPickupPoints_Click"/>
-                        <Button Content="📊 Все заказы" 
+                                    <Button x:Name="BtnAllOrders"
+                        Content="📊 Все заказы" 
                         Style="{StaticResource MenuButtonStyle}" 
                         Click="ShowAllOrders_Click"/>
-                    </StackPanel>
+                                </StackPanel>
                 </StackPanel>
 
                 <!-- Кнопка выхода внизу -->
