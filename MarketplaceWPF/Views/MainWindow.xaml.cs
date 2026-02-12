@@ -27,7 +27,7 @@ namespace MarketplaceWPF.Views
                 {
                     BtnCatalog, BtnCart, BtnOrders, BtnProfile, // Customer
                     BtnPickupOrders, BtnScanQR, // Worker
-                    BtnProducts, BtnCategories, BtnPickupPoints, BtnAllOrders // Admin
+                    BtnProducts, BtnCategories, BtnPickupPoints, BtnWorkers, BtnAllOrders // Admin
                 };
 
 
@@ -84,6 +84,11 @@ namespace MarketplaceWPF.Views
         {
             ContentFrame.Navigate(new OrdersPage());
             SetActiveButton(BtnOrders);
+        }
+        private void ShowWorkers_Click(object sender, RoutedEventArgs e)
+        {
+            ContentFrame.Navigate(new WorkerManagementPage());
+            SetActiveButton(BtnWorkers);
         }
         private void ShowCart_Click(object sender, RoutedEventArgs e)
         {

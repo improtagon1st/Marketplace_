@@ -253,6 +253,7 @@ namespace MarketplaceAPI.Controllers
                 Id = order.Id,
                 CustomerName = order.User.FullName,
                 CustomerPhone = order.User.Phone,
+                PickupPointId = order.PickupPointId,  // <- днаюбэ щрн!
                 PickupPointName = order.PickupPoint.Name,
                 PickupPointAddress = order.PickupPoint.Address,
                 TotalPrice = order.TotalPrice,

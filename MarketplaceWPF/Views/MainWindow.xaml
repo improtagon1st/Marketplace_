@@ -101,6 +101,7 @@
                         Content="📍 Пункты выдачи" 
                         Style="{StaticResource MenuButtonStyle}" 
                         Click="ShowPickupPoints_Click"/>
+                        <Button x:Name="BtnWorkers" Content="👥 Работники" Click="ShowWorkers_Click" Style="{StaticResource MenuButtonStyle}"/>
                                     <Button x:Name="BtnAllOrders"
                         Content="📊 Все заказы" 
                         Style="{StaticResource MenuButtonStyle}" 
