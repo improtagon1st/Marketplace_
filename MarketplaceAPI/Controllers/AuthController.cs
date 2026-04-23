@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 
@@ -24,10 +25,32 @@ namespace MarketplaceAPI.Controllers
 
         // POST: api/auth/register
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            var fullName = request.FullName?.Trim();
+            var email = request.Email?.Trim().ToLowerInvariant();
+            var phone = request.Phone?.Trim();
+
+            if (string.IsNullOrWhiteSpace(fullName) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(phone) ||
+                string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest("Заполните все поля");
+            }
+
+            if (!IsEmailValid(email))
+            {
+                return BadRequest("Введите корректный email");
+            }
+
+            if (request.Password.Length < 6)
+            {
+                return BadRequest("Пароль должен содержать минимум 6 символов");
+            }
+
             // Проверка что email не занят
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == email))
             {
                 return BadRequest("Email уже используется");
             }
@@ -36,10 +59,10 @@ namespace MarketplaceAPI.Controllers
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Email = request.Email,
+                Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                FullName = request.FullName,
-                Phone = request.Phone,
+                FullName = fullName,
+                Phone = phone,
                 Role = "Customer",
                 CreatedAt = DateTime.Now
             };
@@ -48,6 +71,19 @@ namespace MarketplaceAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Регистрация успешна");
+        }
+
+        private static bool IsEmailValid(string email)
+        {
+            try
+            {
+                var address = new MailAddress(email);
+                return address.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         // POST: api/auth/login
@@ -92,6 +128,7 @@ namespace MarketplaceAPI.Controllers
 
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.FullName),

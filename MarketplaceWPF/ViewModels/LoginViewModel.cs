@@ -89,7 +89,18 @@ namespace MarketplaceWPF.ViewModels
 
         private void OpenRegister()
         {
-            MessageBox.Show("Регистрация - создадим позже");
+            var owner = Application.Current.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w is Views.LoginWindow);
+
+            var registerWindow = new RegisterWindow();
+
+            if (owner != null)
+            {
+                registerWindow.Owner = owner;
+            }
+
+            registerWindow.ShowDialog();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

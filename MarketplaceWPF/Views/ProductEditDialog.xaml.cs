@@ -1,7 +1,10 @@
 ﻿using MarketplaceWPF.Models;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace MarketplaceWPF.Views
 {
@@ -41,6 +44,7 @@ namespace MarketplaceWPF.Views
             PriceBox.Text = product.Price.ToString();
             StockBox.Text = product.Stock.ToString();
             ImageUrlBox.Text = product.ImageUrl;
+            UpdateImagePreview();
 
             // Выбираем категорию
             CategoryCombo.SelectedValue = product.CategoryId;
@@ -75,9 +79,8 @@ namespace MarketplaceWPF.Views
                 return;
             }
 
-            // ОТЛАДКА - проверим что выбрано
             int categoryId = (int)CategoryCombo.SelectedValue;
-            MessageBox.Show($"Selected CategoryId: {categoryId}");
+            string imageUrl = ImageUrlBox.Text.Trim();
 
             // Создаём или обновляем товар
             if (_isEditMode)
@@ -88,7 +91,7 @@ namespace MarketplaceWPF.Views
                 Product.Price = price;
                 Product.Stock = stock;
                 Product.CategoryId = categoryId;
-                Product.ImageUrl = ImageUrlBox.Text;
+                Product.ImageUrl = imageUrl;
             }
             else
             {
@@ -100,7 +103,7 @@ namespace MarketplaceWPF.Views
                     Price = price,
                     Stock = stock,
                     CategoryId = categoryId,
-                    ImageUrl = ImageUrlBox.Text
+                    ImageUrl = imageUrl
                 };
             }
 
@@ -112,6 +115,65 @@ namespace MarketplaceWPF.Views
         {
             DialogResult = false;
             Close();
+        }
+
+        private void ImageUrlBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateImagePreview();
+        }
+
+        private void ImagePreview_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            ShowImagePlaceholder("Не удалось загрузить изображение. Проверьте ссылку.");
+        }
+
+        private void UpdateImagePreview()
+        {
+            if (ImagePreview == null || ImagePreviewPlaceholder == null || ImageUrlBox == null)
+            {
+                return;
+            }
+
+            string imageUrl = ImageUrlBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(imageUrl))
+            {
+                ShowImagePlaceholder("Предпросмотр появится после ввода прямой ссылки на изображение");
+                return;
+            }
+
+            if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                ShowImagePlaceholder("Введите прямую ссылку на изображение, начинающуюся с http или https");
+                return;
+            }
+
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                bitmap.UriSource = uri;
+                bitmap.EndInit();
+
+                ImagePreview.Source = bitmap;
+                ImagePreview.Visibility = Visibility.Visible;
+                ImagePreviewPlaceholder.Visibility = Visibility.Collapsed;
+            }
+            catch
+            {
+                ShowImagePlaceholder("Не удалось загрузить изображение. Проверьте ссылку.");
+            }
+        }
+
+        private void ShowImagePlaceholder(string message)
+        {
+            ImagePreview.Source = null;
+            ImagePreview.Visibility = Visibility.Collapsed;
+            ImagePreviewPlaceholder.Text = message;
+            ImagePreviewPlaceholder.Visibility = Visibility.Visible;
         }
     }
 }

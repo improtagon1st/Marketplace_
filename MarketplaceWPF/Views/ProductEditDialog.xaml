@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Редактирование товара" 
-        Height="500" 
-        Width="500"
+        Height="630" 
+        Width="560"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
 
@@ -93,7 +93,32 @@
                          FontSize="14"
                          Height="40"
                          Padding="10"
+                         TextChanged="ImageUrlBox_TextChanged"
                          Margin="0,0,0,15"/>
+
+                <Border Height="140"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Background="#FAFAFA"
+                        Margin="0,0,0,15">
+                    <Grid>
+                        <Image x:Name="ImagePreview"
+                               Stretch="Uniform"
+                               Margin="10"
+                               Visibility="Collapsed"
+                               ImageFailed="ImagePreview_ImageFailed"/>
+                        <TextBlock x:Name="ImagePreviewPlaceholder"
+                                   Text="Предпросмотр появится после ввода прямой ссылки на изображение"
+                                   Foreground="#757575"
+                                   FontSize="13"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="20"/>
+                    </Grid>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
