@@ -217,7 +217,7 @@ export function CartPage() {
               <p className="text-sm font-medium text-slate-600">Итого</p>
               <p className="mt-1 text-3xl font-extrabold text-ink">{formatCurrency(guestTotal)}</p>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Для оформления заказа нужно войти в аккаунт. После входа корзина будет перенесена на сервер.
+                Для оформления заказа нужно войти в аккаунт. После входа товары из корзины будут синхронизированы с вашим профилем.
               </p>
               <div className="mt-5 space-y-2">
                 <Button variant="secondary" fullWidth onClick={() => navigate(`/login?redirect=${encodeURIComponent('/checkout')}`)}>

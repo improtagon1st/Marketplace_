@@ -1,0 +1,46 @@
+<Window x:Class="MarketplaceWPF.Views.ConsentDocumentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Документ"
+        Height="500"
+        Width="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Background="#F5F5F5">
+        <Border Margin="24"
+                Padding="24"
+                Background="White"
+                CornerRadius="10">
+            <StackPanel>
+                <TextBlock x:Name="TitleTextBlock"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,16"/>
+
+                <TextBlock TextWrapping="Wrap"
+                           FontSize="14"
+                           LineHeight="22"
+                           Foreground="#444444">
+                    <Run Text="Оператор: интернет-магазин."/>
+                    <LineBreak/>
+                    <LineBreak/>
+                    <Run Text="Какие данные собираются: ФИО, email, номер телефона, адрес доставки."/>
+                    <LineBreak/>
+                    <LineBreak/>
+                    <Run Text="Цель сбора: регистрация пользователя, обработка заказов и предоставление доступа к личному кабинету."/>
+                    <LineBreak/>
+                    <LineBreak/>
+                    <Run Text="Срок действия: с момента предоставления данных и до момента отзыва пользователем."/>
+                </TextBlock>
+
+                <Button Content="Закрыть"
+                        Width="120"
+                        Height="38"
+                        Margin="0,24,0,0"
+                        HorizontalAlignment="Right"
+                        Click="CloseButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -11,13 +12,13 @@ namespace MarketplaceWPF.Services
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://localhost:7093/api/";
 
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
 
         public ApiService()
         {
             var handler = new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
             };
 
             _httpClient = new HttpClient(handler)
@@ -26,18 +27,11 @@ namespace MarketplaceWPF.Services
             };
         }
 
-        // GET запрос
-        public async Task<T> GetAsync<T>(string endpoint)
+        public async Task<T?> GetAsync<T>(string endpoint)
         {
             try
             {
-                // КРИТИЧНО: Устанавливаем заголовок авторизации ПЕРЕД каждым запросом
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                if (!string.IsNullOrEmpty(Token))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", Token);
-                }
+                ApplyAuthorizationHeader();
 
                 var response = await _httpClient.GetAsync(endpoint);
                 var content = await response.Content.ReadAsStringAsync();
@@ -46,36 +40,24 @@ namespace MarketplaceWPF.Services
                 {
                     return JsonConvert.DeserializeObject<T>(content);
                 }
-                else
-                {
-                    MessageBox.Show($"API Error ({response.StatusCode}): {content}");
-                    return default(T);
-                }
+
+                MessageBox.Show($"Ошибка сервиса ({response.StatusCode}): {content}");
+                return default;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Network Error: {ex.Message}");
-                return default(T);
+                MessageBox.Show($"Ошибка подключения: {ex.Message}");
+                return default;
             }
         }
 
-        // POST запрос
-        public async Task<T> PostAsync<T>(string endpoint, object data)
+        public async Task<T?> PostAsync<T>(string endpoint, object data)
         {
             try
             {
-                // Устанавливаем заголовок авторизации
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                if (!string.IsNullOrEmpty(Token))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", Token);
-                }
+                ApplyAuthorizationHeader();
 
                 var json = JsonConvert.SerializeObject(data);
-
-              
-
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(endpoint, content);
@@ -85,91 +67,116 @@ namespace MarketplaceWPF.Services
                 {
                     if (string.IsNullOrEmpty(responseContent) || responseContent == "\"\"")
                     {
-                        return default(T);
+                        return default;
                     }
+
+                    if (typeof(T) == typeof(string))
+                    {
+                        return (T)(object)responseContent.Trim('"');
+                    }
+
                     return JsonConvert.DeserializeObject<T>(responseContent);
                 }
-                else
-                {
-                    MessageBox.Show($"API Error ({response.StatusCode}): {responseContent}");
-                    return default(T);
-                }
+
+                MessageBox.Show($"Ошибка сервиса ({response.StatusCode}): {responseContent}");
+                return default;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
-                return default(T);
+                MessageBox.Show($"Ошибка: {ex.Message}");
+                return default;
             }
         }
 
-        // PUT запрос
-        public async Task<bool> PutAsync(string endpoint, object data = null)
+        public async Task<bool> PutAsync(string endpoint, object? data = null)
         {
             try
             {
-                // Устанавливаем заголовок авторизации
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                if (!string.IsNullOrEmpty(Token))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", Token);
-                }
+                ApplyAuthorizationHeader();
 
-                HttpContent content = null;
-                if (data != null)
-                {
-                    var json = JsonConvert.SerializeObject(data);
-                    content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
-                else
-                {
-                    content = new StringContent("", Encoding.UTF8, "application/json");
-                }
+                HttpContent content = data != null
+                    ? new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")
+                    : new StringContent(string.Empty, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync(endpoint, content);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show($"API Error ({response.StatusCode}): {errorContent}");
+                    MessageBox.Show($"Ошибка сервиса ({response.StatusCode}): {errorContent}");
                 }
 
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}");
                 return false;
             }
         }
 
-        // DELETE запрос
         public async Task<bool> DeleteAsync(string endpoint)
         {
             try
             {
-                // Устанавливаем заголовок авторизации
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                if (!string.IsNullOrEmpty(Token))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", Token);
-                }
+                ApplyAuthorizationHeader();
 
                 var response = await _httpClient.DeleteAsync(endpoint);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show($"API Error ({response.StatusCode}): {errorContent}");
+                    MessageBox.Show($"Ошибка сервиса ({response.StatusCode}): {errorContent}");
                 }
 
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                MessageBox.Show($"Ошибка: {ex.Message}");
                 return false;
+            }
+        }
+
+        public async Task<string> UploadProductImageAsync(string filePath)
+        {
+            try
+            {
+                ApplyAuthorizationHeader();
+
+                using var form = new MultipartFormDataContent();
+                await using var fileStream = File.OpenRead(filePath);
+                using var fileContent = new StreamContent(fileStream);
+
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                form.Add(fileContent, "file", Path.GetFileName(filePath));
+
+                var response = await _httpClient.PostAsync("Uploads/product-image", form);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    MessageBox.Show($"Ошибка сервиса ({response.StatusCode}): {responseContent}");
+                    return string.Empty;
+                }
+
+                dynamic? result = JsonConvert.DeserializeObject(responseContent);
+                return result?.imageUrl ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка загрузки изображения: {ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        private void ApplyAuthorizationHeader()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            if (!string.IsNullOrEmpty(Token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", Token);
             }
         }
     }

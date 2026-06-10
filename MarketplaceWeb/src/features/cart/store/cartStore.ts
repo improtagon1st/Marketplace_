@@ -80,7 +80,7 @@ export const useCartStore = create<CartState>()(
           try {
             await addToCart({ productId: item.productId, quantity: item.quantity })
           } catch {
-            errors.push(`Товар "${item.productName}" не удалось перенести в серверную корзину`)
+            errors.push(`Товар "${item.productName}" не удалось добавить в корзину аккаунта`)
           }
         }
 
