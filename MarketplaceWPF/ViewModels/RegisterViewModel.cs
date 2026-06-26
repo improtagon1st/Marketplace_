@@ -17,6 +17,7 @@ namespace MarketplaceWPF.ViewModels
         private string _phone = string.Empty;
         private string _password = string.Empty;
         private string _confirmPassword = string.Empty;
+        private bool _isPersonalDataConsentAccepted;
         private bool _isBusy;
 
         public string FullName
@@ -80,6 +81,17 @@ namespace MarketplaceWPF.ViewModels
             }
         }
 
+        public bool IsPersonalDataConsentAccepted
+        {
+            get => _isPersonalDataConsentAccepted;
+            set
+            {
+                _isPersonalDataConsentAccepted = value;
+                OnPropertyChanged(nameof(IsPersonalDataConsentAccepted));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
         public ICommand RegisterCommand { get; }
         public ICommand BackToLoginCommand { get; }
 
@@ -87,8 +99,8 @@ namespace MarketplaceWPF.ViewModels
         {
             _apiService = new ApiService();
 
-            RegisterCommand = new RelayCommand(async (param) => await Register(param as Window), _ => !IsBusy);
-            BackToLoginCommand = new RelayCommand((param) => CloseWindow(param as Window), _ => !IsBusy);
+            RegisterCommand = new RelayCommand(async param => await Register(param as Window), _ => !IsBusy);
+            BackToLoginCommand = new RelayCommand(param => CloseWindow(param as Window), _ => !IsBusy);
         }
 
         private async Task Register(Window? window)
@@ -118,6 +130,12 @@ namespace MarketplaceWPF.ViewModels
                 return;
             }
 
+            if (!IsPhoneValid(phone))
+            {
+                MessageBox.Show("Введите корректный номер телефона");
+                return;
+            }
+
             if (Password.Length < 6)
             {
                 MessageBox.Show("Пароль должен содержать минимум 6 символов");
@@ -127,6 +145,12 @@ namespace MarketplaceWPF.ViewModels
             if (Password != ConfirmPassword)
             {
                 MessageBox.Show("Пароли не совпадают");
+                return;
+            }
+
+            if (!IsPersonalDataConsentAccepted)
+            {
+                MessageBox.Show("Необходимо согласие на обработку персональных данных");
                 return;
             }
 
@@ -170,6 +194,17 @@ namespace MarketplaceWPF.ViewModels
             {
                 return false;
             }
+        }
+
+        private static bool IsPhoneValid(string phone)
+        {
+            var digits = new string(phone.Where(char.IsDigit).ToArray());
+            if (digits.Length < 10 || digits.Length > 15)
+            {
+                return false;
+            }
+
+            return phone.All(ch => char.IsDigit(ch) || ch == '+' || ch == ' ' || ch == '-' || ch == '(' || ch == ')');
         }
 
         private static void CloseWindow(Window? window)

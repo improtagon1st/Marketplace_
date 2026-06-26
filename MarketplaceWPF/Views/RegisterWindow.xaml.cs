@@ -26,5 +26,25 @@ namespace MarketplaceWPF.Views
                 viewModel.ConfirmPassword = ((PasswordBox)sender).Password;
             }
         }
+
+        private void PersonalDataLink_Click(object sender, RoutedEventArgs e)
+        {
+            ShowLegalDocument("Согласие на обработку персональных данных");
+        }
+
+        private void UserAgreementLink_Click(object sender, RoutedEventArgs e)
+        {
+            ShowLegalDocument("Пользовательское соглашение");
+        }
+
+        private void ShowLegalDocument(string title)
+        {
+            var window = new ConsentDocumentWindow(title)
+            {
+                Owner = this
+            };
+
+            window.ShowDialog();
+        }
     }
 }

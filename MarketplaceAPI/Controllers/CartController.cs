@@ -9,7 +9,7 @@ namespace MarketplaceAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Только для авторизованных пользователей
+    [Authorize] // РўРѕР»СЊРєРѕ РґР»СЏ Р°РІС‚РѕСЂРёР·РѕРІР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
     public class CartController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +19,7 @@ namespace MarketplaceAPI.Controllers
             _context = context;
         }
 
-        // GET: api/cart - Получить корзину пользователя
+        // GET: api/cart - РџРѕР»СѓС‡РёС‚СЊ РєРѕСЂР·РёРЅСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
@@ -44,46 +44,46 @@ namespace MarketplaceAPI.Controllers
             return Ok(cartItems);
         }
 
-        // POST: api/cart - Добавить товар в корзину
+        // POST: api/cart - Р”РѕР±Р°РІРёС‚СЊ С‚РѕРІР°СЂ РІ РєРѕСЂР·РёРЅСѓ
         [HttpPost]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            // Проверяем существование товара
+            // РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚РѕРІР°СЂР°
             var product = await _context.Products.FindAsync(request.ProductId);
             if (product == null)
             {
-                return NotFound("Товар не найден");
+                return NotFound("РўРѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ");
             }
 
-            // Проверяем наличие на складе
+            // РџСЂРѕРІРµСЂСЏРµРј РЅР°Р»РёС‡РёРµ РЅР° СЃРєР»Р°РґРµ
             if (product.Stock < request.Quantity)
             {
-                return BadRequest($"Недостаточно товара на складе. Доступно: {product.Stock}");
+                return BadRequest($"РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕРІР°СЂР° РЅР° СЃРєР»Р°РґРµ. Р”РѕСЃС‚СѓРїРЅРѕ: {product.Stock}");
             }
 
-            // Проверяем есть ли уже товар в корзине
+            // РџСЂРѕРІРµСЂСЏРµРј РµСЃС‚СЊ Р»Рё СѓР¶Рµ С‚РѕРІР°СЂ РІ РєРѕСЂР·РёРЅРµ
             var existingItem = await _context.CartItems
                 .FirstOrDefaultAsync(c => c.UserId == userId && c.ProductId == request.ProductId);
 
             if (existingItem != null)
             {
-                // Увеличиваем количество
+                // РЈРІРµР»РёС‡РёРІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ
                 existingItem.Quantity += request.Quantity;
 
-                // Проверяем что не превышаем доступное количество
+                // РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ РЅРµ РїСЂРµРІС‹С€Р°РµРј РґРѕСЃС‚СѓРїРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ
                 if (existingItem.Quantity > product.Stock)
                 {
-                    return BadRequest($"Недостаточно товара на складе. Доступно: {product.Stock}");
+                    return BadRequest($"РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕРІР°СЂР° РЅР° СЃРєР»Р°РґРµ. Р”РѕСЃС‚СѓРїРЅРѕ: {product.Stock}");
                 }
 
                 await _context.SaveChangesAsync();
-                return Ok("Количество товара в корзине увеличено");
+                return Ok("РљРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° РІ РєРѕСЂР·РёРЅРµ СѓРІРµР»РёС‡РµРЅРѕ");
             }
             else
             {
-                // Добавляем новый товар в корзину
+                // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№ С‚РѕРІР°СЂ РІ РєРѕСЂР·РёРЅСѓ
                 var cartItem = new CartItem
                 {
                     UserId = userId,
@@ -95,11 +95,11 @@ namespace MarketplaceAPI.Controllers
                 _context.CartItems.Add(cartItem);
                 await _context.SaveChangesAsync();
 
-                return Ok("Товар добавлен в корзину");
+                return Ok("РўРѕРІР°СЂ РґРѕР±Р°РІР»РµРЅ РІ РєРѕСЂР·РёРЅСѓ");
             }
         }
 
-        // PUT: api/cart/{id} - Изменить количество товара в корзине
+        // PUT: api/cart/{id} - РР·РјРµРЅРёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР° РІ РєРѕСЂР·РёРЅРµ
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCartItem(int id, [FromBody] UpdateCartItemRequest request)
         {
@@ -111,26 +111,26 @@ namespace MarketplaceAPI.Controllers
 
             if (cartItem == null)
             {
-                return NotFound("Товар не найден в корзине");
+                return NotFound("РўРѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ РІ РєРѕСЂР·РёРЅРµ");
             }
 
             if (request.Quantity <= 0)
             {
-                return BadRequest("Количество должно быть больше 0");
+                return BadRequest("РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0");
             }
 
             if (request.Quantity > cartItem.Product.Stock)
             {
-                return BadRequest($"Недостаточно товара на складе. Доступно: {cartItem.Product.Stock}");
+                return BadRequest($"РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕРІР°СЂР° РЅР° СЃРєР»Р°РґРµ. Р”РѕСЃС‚СѓРїРЅРѕ: {cartItem.Product.Stock}");
             }
 
             cartItem.Quantity = request.Quantity;
             await _context.SaveChangesAsync();
 
-            return Ok("Количество обновлено");
+            return Ok("РљРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРѕ");
         }
 
-        // DELETE: api/cart/{id} - Удалить товар из корзины
+        // DELETE: api/cart/{id} - РЈРґР°Р»РёС‚СЊ С‚РѕРІР°СЂ РёР· РєРѕСЂР·РёРЅС‹
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveFromCart(int id)
         {
@@ -141,16 +141,16 @@ namespace MarketplaceAPI.Controllers
 
             if (cartItem == null)
             {
-                return NotFound("Товар не найден в корзине");
+                return NotFound("РўРѕРІР°СЂ РЅРµ РЅР°Р№РґРµРЅ РІ РєРѕСЂР·РёРЅРµ");
             }
 
             _context.CartItems.Remove(cartItem);
             await _context.SaveChangesAsync();
 
-            return Ok("Товар удалён из корзины");
+            return Ok("РўРѕРІР°СЂ СѓРґР°Р»С‘РЅ РёР· РєРѕСЂР·РёРЅС‹");
         }
 
-        // DELETE: api/cart/clear - Очистить корзину
+        // DELETE: api/cart/clear - РћС‡РёСЃС‚РёС‚СЊ РєРѕСЂР·РёРЅСѓ
         [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
@@ -163,16 +163,16 @@ namespace MarketplaceAPI.Controllers
             _context.CartItems.RemoveRange(cartItems);
             await _context.SaveChangesAsync();
 
-            return Ok("Корзина очищена");
+            return Ok("РљРѕСЂР·РёРЅР° РѕС‡РёС‰РµРЅР°");
         }
 
-        // POST: api/cart/checkout - Оформить заказ из корзины
+        // POST: api/cart/checkout - РћС„РѕСЂРјРёС‚СЊ Р·Р°РєР°Р· РёР· РєРѕСЂР·РёРЅС‹
         [HttpPost("checkout")]
         public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
-            // Получаем товары из корзины
+            // РџРѕР»СѓС‡Р°РµРј С‚РѕРІР°СЂС‹ РёР· РєРѕСЂР·РёРЅС‹
             var cartItems = await _context.CartItems
                 .Include(c => c.Product)
                 .Where(c => c.UserId == userId)
@@ -180,39 +180,39 @@ namespace MarketplaceAPI.Controllers
 
             if (!cartItems.Any())
             {
-                return BadRequest("Корзина пуста");
+                return BadRequest("РљРѕСЂР·РёРЅР° РїСѓСЃС‚Р°");
             }
 
-            // Проверяем наличие всех товаров
+            // РџСЂРѕРІРµСЂСЏРµРј РЅР°Р»РёС‡РёРµ РІСЃРµС… С‚РѕРІР°СЂРѕРІ
             foreach (var item in cartItems)
             {
                 if (item.Product.Stock < item.Quantity)
                 {
-                    return BadRequest($"Товар '{item.Product.Name}' недоступен в нужном количестве. Доступно: {item.Product.Stock}");
+                    return BadRequest($"РўРѕРІР°СЂ '{item.Product.Name}' РЅРµРґРѕСЃС‚СѓРїРµРЅ РІ РЅСѓР¶РЅРѕРј РєРѕР»РёС‡РµСЃС‚РІРµ. Р”РѕСЃС‚СѓРїРЅРѕ: {item.Product.Stock}");
                 }
             }
 
-            // Проверяем существование ПВЗ
+            // РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РџР’Р—
             var pickupPoint = await _context.PickupPoints.FindAsync(request.PickupPointId);
             if (pickupPoint == null)
             {
-                return NotFound("Пункт выдачи не найден");
+                return NotFound("РџСѓРЅРєС‚ РІС‹РґР°С‡Рё РЅРµ РЅР°Р№РґРµРЅ");
             }
 
-            // Создаём заказ
+            // РЎРѕР·РґР°С‘Рј Р·Р°РєР°Р·
             var order = new Order
             {
                 UserId = userId,
                 PickupPointId = request.PickupPointId,
                 Status = "Created",
                 CreatedAt = DateTime.Now,
-                Qrcode = GenerateQRCode()
+                Qrcode = await GenerateUniqueOrderCodeAsync()
             };
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Создаём позиции заказа
+            // РЎРѕР·РґР°С‘Рј РїРѕР·РёС†РёРё Р·Р°РєР°Р·Р°
             decimal totalPrice = 0;
             foreach (var cartItem in cartItems)
             {
@@ -226,7 +226,7 @@ namespace MarketplaceAPI.Controllers
 
                 _context.OrderItems.Add(orderItem);
 
-                // Уменьшаем количество на складе
+                // РЈРјРµРЅСЊС€Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РЅР° СЃРєР»Р°РґРµ
                 cartItem.Product.Stock -= cartItem.Quantity;
 
                 totalPrice += cartItem.Product.Price * cartItem.Quantity;
@@ -234,18 +234,26 @@ namespace MarketplaceAPI.Controllers
 
             order.TotalPrice = totalPrice;
 
-            // Очищаем корзину
+            // РћС‡РёС‰Р°РµРј РєРѕСЂР·РёРЅСѓ
             _context.CartItems.RemoveRange(cartItems);
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { OrderId = order.Id, QRCode = order.Qrcode, Message = "Заказ успешно оформлен!" });
+            return Ok(new { OrderId = order.Id, QRCode = order.Qrcode, Message = "Р—Р°РєР°Р· СѓСЃРїРµС€РЅРѕ РѕС„РѕСЂРјР»РµРЅ!" });
         }
 
-        // Генерация уникального QR-кода
-        private string GenerateQRCode()
+        // Р“РµРЅРµСЂР°С†РёСЏ СѓРЅРёРєР°Р»СЊРЅРѕРіРѕ QR-РєРѕРґР°
+        private async Task<string> GenerateUniqueOrderCodeAsync()
         {
-            return $"MP-{new Random().Next(100000, 999999)}";
+            while (true)
+            {
+                var code = $"MP-{Random.Shared.Next(100000, 999999)}";
+                var exists = await _context.Orders.AnyAsync(o => o.Qrcode == code);
+                if (!exists)
+                {
+                    return code;
+                }
+            }
         }
     }
 }

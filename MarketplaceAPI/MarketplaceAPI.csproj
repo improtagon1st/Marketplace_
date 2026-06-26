@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <MarketplaceWebDir>$(MSBuildProjectDirectory)\..\MarketplaceWeb</MarketplaceWebDir>
+    <MarketplaceWebDistDir>$(MarketplaceWebDir)\dist</MarketplaceWebDistDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,5 +25,20 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
+
+  <Target Name="BuildMarketplaceWebStaticFiles" BeforeTargets="Build">
+    <Message Importance="high" Text="Building MarketplaceWeb and syncing static files into API wwwroot..." />
+    <Exec WorkingDirectory="$(MarketplaceWebDir)" Command="npm run build" />
+    <MakeDir Directories="$(MSBuildProjectDirectory)\wwwroot" />
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\wwwroot\assets" Condition="Exists('$(MSBuildProjectDirectory)\wwwroot\assets')" />
+    <Delete Files="$(MSBuildProjectDirectory)\wwwroot\index.html;$(MSBuildProjectDirectory)\wwwroot\vite.svg" ContinueOnError="true" />
+    <ItemGroup>
+      <MarketplaceWebDistFiles Include="$(MarketplaceWebDistDir)\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(MarketplaceWebDistFiles)"
+      DestinationFiles="@(MarketplaceWebDistFiles->'$(MSBuildProjectDirectory)\wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="false" />
+  </Target>
 
 </Project>

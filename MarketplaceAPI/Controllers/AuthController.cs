@@ -23,7 +23,6 @@ namespace MarketplaceAPI.Controllers
             _configuration = configuration;
         }
 
-        // POST: api/auth/register
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -36,26 +35,29 @@ namespace MarketplaceAPI.Controllers
                 string.IsNullOrWhiteSpace(phone) ||
                 string.IsNullOrWhiteSpace(request.Password))
             {
-                return BadRequest("Заполните все поля");
+                return BadRequest("Р—Р°РїРѕР»РЅРёС‚Рµ РІСЃРµ РїРѕР»СЏ");
             }
 
             if (!IsEmailValid(email))
             {
-                return BadRequest("Введите корректный email");
+                return BadRequest("Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email");
+            }
+
+            if (!IsPhoneValid(phone))
+            {
+                return BadRequest("Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ С‚РµР»РµС„РѕРЅР°");
             }
 
             if (request.Password.Length < 6)
             {
-                return BadRequest("Пароль должен содержать минимум 6 символов");
+                return BadRequest("РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 6 СЃРёРјРІРѕР»РѕРІ");
             }
 
-            // Проверка что email не занят
             if (await _context.Users.AnyAsync(u => u.Email == email))
             {
-                return BadRequest("Email уже используется");
+                return BadRequest("Email СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ");
             }
 
-            // Создание нового пользователя
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -70,23 +72,9 @@ namespace MarketplaceAPI.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok("Регистрация успешна");
+            return Ok("Р РµРіРёСЃС‚СЂР°С†РёСЏ СѓСЃРїРµС€РЅР°");
         }
 
-        private static bool IsEmailValid(string email)
-        {
-            try
-            {
-                var address = new MailAddress(email);
-                return address.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        // POST: api/auth/login
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -94,14 +82,13 @@ namespace MarketplaceAPI.Controllers
 
             if (user == null)
             {
-                return Unauthorized("Неверный email или пароль");
+                return Unauthorized("РќРµРІРµСЂРЅС‹Р№ email РёР»Рё РїР°СЂРѕР»СЊ");
             }
 
             bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
             if (!isValid)
             {
-                return Unauthorized("Неверный email или пароль");
+                return Unauthorized("РќРµРІРµСЂРЅС‹Р№ email РёР»Рё РїР°СЂРѕР»СЊ");
             }
 
             var token = GenerateJwtToken(user);
@@ -113,7 +100,7 @@ namespace MarketplaceAPI.Controllers
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = user.Role,
-                PickupPointId = user.PickupPointId // <- Добавь это
+                PickupPointId = user.PickupPointId
             };
 
             return Ok(response);
@@ -144,6 +131,30 @@ namespace MarketplaceAPI.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private static bool IsEmailValid(string email)
+        {
+            try
+            {
+                var address = new MailAddress(email);
+                return address.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsPhoneValid(string phone)
+        {
+            var digits = new string(phone.Where(char.IsDigit).ToArray());
+            if (digits.Length < 10 || digits.Length > 15)
+            {
+                return false;
+            }
+
+            return phone.All(ch => char.IsDigit(ch) || ch == '+' || ch == ' ' || ch == '-' || ch == '(' || ch == ')');
         }
     }
 }

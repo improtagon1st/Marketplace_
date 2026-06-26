@@ -61,12 +61,12 @@ namespace MarketplaceAPI.Controllers
                 {
                     Id = o.Id,
                     CustomerName = o.User.FullName,
-                    CustomerPhone = o.User.Phone,
+                    CustomerPhone = userRole == "Admin" ? string.Empty : o.User.Phone,
                     PickupPointName = o.PickupPoint.Name,
                     PickupPointAddress = o.PickupPoint.Address,
                     TotalPrice = o.TotalPrice,
                     Status = o.Status,
-                    QRCode = o.Qrcode,
+                    QRCode = userRole == "Admin" ? string.Empty : o.Qrcode,
                     CreatedAt = o.CreatedAt.Value,
                     DeliveredAt = o.DeliveredAt,
                     PickedUpAt = o.PickedUpAt,
@@ -89,7 +89,7 @@ namespace MarketplaceAPI.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
-                return NotFound("Заказ не найден");
+                return NotFound("Р—Р°РєР°Р· РЅРµ РЅР°Р№РґРµРЅ");
             }
 
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -101,14 +101,14 @@ namespace MarketplaceAPI.Controllers
 
             if (order.Status != "Created")
             {
-                return BadRequest("Заказ уже обработан");
+                return BadRequest("Р—Р°РєР°Р· СѓР¶Рµ РѕР±СЂР°Р±РѕС‚Р°РЅ");
             }
 
             order.Status = "Delivered";
             order.DeliveredAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            return Ok("Заказ отмечен как доставленный");
+            return Ok("Р—Р°РєР°Р· РѕС‚РјРµС‡РµРЅ РєР°Рє РґРѕСЃС‚Р°РІР»РµРЅРЅС‹Р№");
         }
 
         [HttpGet("{id}")]
@@ -123,7 +123,7 @@ namespace MarketplaceAPI.Controllers
 
             if (order == null)
             {
-                return NotFound("Заказ не найден");
+                return NotFound("Р—Р°РєР°Р· РЅРµ РЅР°Р№РґРµРЅ");
             }
 
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -137,13 +137,13 @@ namespace MarketplaceAPI.Controllers
             {
                 Id = order.Id,
                 CustomerName = order.User.FullName,
-                CustomerPhone = order.User.Phone,
+                CustomerPhone = userRole == "Admin" ? string.Empty : order.User.Phone,
                 PickupPointId = order.PickupPointId,
                 PickupPointName = order.PickupPoint.Name,
                 PickupPointAddress = order.PickupPoint.Address,
                 TotalPrice = order.TotalPrice,
                 Status = order.Status,
-                QRCode = order.Qrcode,
+                QRCode = userRole == "Admin" ? string.Empty : order.Qrcode,
                 CreatedAt = order.CreatedAt.Value,
                 DeliveredAt = order.DeliveredAt,
                 PickedUpAt = order.PickedUpAt,
@@ -171,12 +171,12 @@ namespace MarketplaceAPI.Controllers
                 var product = await _context.Products.FindAsync(item.ProductId);
                 if (product == null)
                 {
-                    return BadRequest($"Товар с ID {item.ProductId} не найден");
+                    return BadRequest($"РўРѕРІР°СЂ СЃ ID {item.ProductId} РЅРµ РЅР°Р№РґРµРЅ");
                 }
 
                 if (product.Stock < item.Quantity)
                 {
-                    return BadRequest($"Недостаточно товара {product.Name} на складе");
+                    return BadRequest($"РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С‚РѕРІР°СЂР° {product.Name} РЅР° СЃРєР»Р°РґРµ");
                 }
 
                 totalPrice += product.Price * item.Quantity;
@@ -191,7 +191,7 @@ namespace MarketplaceAPI.Controllers
                 product.Stock -= item.Quantity;
             }
 
-            var qrCode = GenerateOrderCode();
+            var qrCode = await GenerateUniqueOrderCodeAsync();
 
             var order = new Order
             {
@@ -216,12 +216,17 @@ namespace MarketplaceAPI.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
-                return NotFound("Заказ не найден");
+                return NotFound("Р—Р°РєР°Р· РЅРµ РЅР°Р№РґРµРЅ");
             }
 
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var userRole = User.FindFirst(ClaimTypes.Role)!.Value;
             if (!await HasOrderAccessAsync(order, userId, userRole))
+            {
+                return Forbid();
+            }
+
+            if (userRole == "Admin")
             {
                 return Forbid();
             }
@@ -246,12 +251,17 @@ namespace MarketplaceAPI.Controllers
 
             if (order == null)
             {
-                return NotFound("Заказ с таким кодом не найден");
+                return NotFound("Р—Р°РєР°Р· СЃ С‚Р°РєРёРј РєРѕРґРѕРј РЅРµ РЅР°Р№РґРµРЅ");
             }
 
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var userRole = User.FindFirst(ClaimTypes.Role)!.Value;
             if (!await HasOrderAccessAsync(order, userId, userRole))
+            {
+                return Forbid();
+            }
+
+            if (userRole == "Admin")
             {
                 return Forbid();
             }
@@ -288,7 +298,7 @@ namespace MarketplaceAPI.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
-                return NotFound("Заказ не найден");
+                return NotFound("Р—Р°РєР°Р· РЅРµ РЅР°Р№РґРµРЅ");
             }
 
             var workerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -300,12 +310,12 @@ namespace MarketplaceAPI.Controllers
 
             if (order.Status == "PickedUp")
             {
-                return BadRequest("Заказ уже выдан");
+                return BadRequest("Р—Р°РєР°Р· СѓР¶Рµ РІС‹РґР°РЅ");
             }
 
             if (order.Status != "Delivered")
             {
-                return BadRequest("Заказ нельзя выдать, пока он не доставлен в ПВЗ");
+                return BadRequest("Р—Р°РєР°Р· РЅРµР»СЊР·СЏ РІС‹РґР°С‚СЊ, РїРѕРєР° РѕРЅ РЅРµ РґРѕСЃС‚Р°РІР»РµРЅ РІ РџР’Р—");
             }
 
             order.Status = "PickedUp";
@@ -313,14 +323,20 @@ namespace MarketplaceAPI.Controllers
             order.PickedUpByWorkerId = workerId;
 
             await _context.SaveChangesAsync();
-            return Ok("Заказ успешно выдан");
+            return Ok("Р—Р°РєР°Р· СѓСЃРїРµС€РЅРѕ РІС‹РґР°РЅ");
         }
 
-        private string GenerateOrderCode()
+        private async Task<string> GenerateUniqueOrderCodeAsync()
         {
-            var random = new Random();
-            var hash = random.Next(100000, 999999).ToString();
-            return $"MP-{hash}";
+            while (true)
+            {
+                var code = $"MP-{Random.Shared.Next(100000, 999999)}";
+                var exists = await _context.Orders.AnyAsync(o => o.Qrcode == code);
+                if (!exists)
+                {
+                    return code;
+                }
+            }
         }
 
         private async Task<bool> HasOrderAccessAsync(Order order, Guid userId, string userRole)
